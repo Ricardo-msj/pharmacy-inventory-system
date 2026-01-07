@@ -1,26 +1,28 @@
 from datetime import date, datetime
+import random 
 
 class Medicamentos:
 
-    def __init__(self, id = 0, nome = '', validade = 0, lote = 0 ):
-        self._id = id
+    def criar_id(self):
+        return random.randint(1, 10000)
+        
+    def __init__(self, nome = '', validade = 0, lote = 0 ):
+        self._id = self.criar_id()
         self._nome = nome
-        self._validade = datetime.strptime(validade, "%d/%m/%Y").date()
+        self._validade = datetime.strptime(validade, "%m/%Y").date()
         self._lote = lote
 
-def esta_vencido(self, _validade):
-    dia = int(_validade[0:2])
-    mes= int(_validade[3:5])
-    ano = int(_validade[6:10])
+    def status(self):
+        dias_pra_vencer = (self._validade - date.today()).days
 
-    dia_atual = date.today().day
-    mes_atual = date.today().month
-    ano_atual = date.today().year
-
-    if ano < ano_atual or (ano == ano_atual and mes < mes_atual) or (ano == ano_atual and mes == mes_atual and dia < dia_atual):
-        return True
+        if dias_pra_vencer < 0:
+            return 'vencido'
+        elif dias_pra_vencer > 0:
+            return 'nao vencido'
+        else:
+            return "PDV"
         
-
+ 
 
 
         
