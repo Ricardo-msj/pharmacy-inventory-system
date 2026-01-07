@@ -1,6 +1,6 @@
 # 💊 Sistema de Controle de Estooque de Farmácia (POO)
 
-> **Status do Projeto:** 🚧 Em desenvolvimento
+> **Status do Projeto:** ✅ Finalizado
 
 Sistema de controle de estoque de medicamentos desenvolvido em **Python**, utilizando **Programação Orientada a Objetos (POO)** e **interface gráfica com Tkinter**.  
 O projeto simula o funcionamento real de uma farmácia, com foco em **validade**, **lotes**, **quantidade em estoque** e **geração de relatórios**.
@@ -36,34 +36,49 @@ Este projeto foi criado com fins **educacionais e profissionais**, visando conso
 - Relatório PDV
 
 ✔ Interface gráfica intuitiva (Tkinter)  
-✔ Exportação de relatórios em `.txt`  
+✔ Exportação de relatórios em `.CSV`  
+✔ Visualização dos dados em formato de tabela 
 
 ---
 
 ## 🛠️ Tecnologias e Ferramentas
 
 - **Linguagem:** Python 3.x  
-- **Interface gráfica:** Tkinter  
+- **Interface gráfica:** Tkinter / ttk 
 - **Biblioteca padrão:** `datetime`  
 - **Paradigma:** Programação Orientada a Objetos (POO)
+- **Exportação de dados:** CSV
 
 ---
 
 ## 📂 Estrutura do Projeto
 
-
 📦 pharmacy-stock-system
 ├── 📂 modulos
 │   ├── 📄 medicamentos.py   
-│   ├── 📄 estoque.py        
+│   ├── 📄 estoque.py       
+│   ├── 📄 relatorio.py      
 │
-├── 📄 main.py               
-├── 📄 README.md             
-└── 📄 .gitignore            
+├── 📄 interface.py          
+├── 📄 main.py              
+├── 📄 README.md
+└── 📄 .gitignore
 
-## Observações
+## ▶️ Como Executar
 
-Projeto desenvolvido com fins **educacionais**, focado no aprendizado prático de
-POO, organização de código e simulação de sistemas reais.
+*1 - Clone o repositório:*
+
+**git clone https://github.com/seu-usuario/seu-repositorio.git**
+
+*2 - Acesse a pasta do projeto:*
+
+**cd pharmacy-stock-system**
+
+*3 - Execute a aplicação:*
+
+**python interface.py**
+
+
+
 
 

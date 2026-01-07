@@ -17,7 +17,7 @@ class Medicamentos:
 
         if dias_pra_vencer < 0:
             return 'vencido'
-        elif dias_pra_vencer > 0:
+        elif dias_pra_vencer > 30:
             return 'nao vencido'
         else:
             return "PDV"

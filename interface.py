@@ -1,9 +1,5 @@
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog
 
 from modulos.medicamentos import Medicamentos
 from modulos.estoque import (
@@ -12,14 +8,20 @@ from modulos.estoque import (
     diminuir_medicamento,
     remover_medicamento
 )
-from modulos.relatorio import (
-    relatorio_geral_texto,
-    relatorio_vencidos_texto,
-    relatorio_pdv_texto
-)
+from modulos.relatorio import gerar_csv
 
-relatorio_atual = ""
+# JANELA 
 
+janela = tk.Tk()
+janela.title("Controle de Estoque de Medicamentos")
+janela.geometry("1000x600")
+
+style = ttk.Style()
+style.theme_use("clam")
+
+tipo_relatorio = tk.StringVar(value="geral")
+
+# FUNÇÕES 
 
 def cadastrar():
     try:
@@ -33,6 +35,17 @@ def cadastrar():
 
         messagebox.showinfo("Sucesso", f"Medicamento cadastrado\nID: {med._id}")
         limpar_campos()
+        atualizar_tabela()
+    except:
+        messagebox.showerror("Erro", "Dados inválidos")
+
+def diminuir():
+    try:
+        id_m = int(entry_id.get())
+        qtd = int(entry_qtd_controle.get())
+        diminuir_medicamento(id_m, qtd)
+        atualizar_tabela()
+        entry_qtd_controle.delete(0, tk.END)
     except:
         messagebox.showerror("Erro", "Dados inválidos")
 
@@ -40,85 +53,119 @@ def remover():
     try:
         id_m = int(entry_id.get())
         remover_medicamento(id_m)
-        messagebox.showinfo("Sucesso", "Medicamento removido")
+        atualizar_tabela()
     except:
         messagebox.showerror("Erro", "ID inválido")
 
-def diminuir():
-    try:
-        id_m = int(entry_id.get())
-        qtd = int(entry_quantidade.get())
-        diminuir_medicamento(id_m, qtd)
-        messagebox.showinfo("Sucesso", "Quantidade atualizada")
-    except:
-        messagebox.showerror("Erro", "Dados inválidos")
+def atualizar_tabela():
+    for item in tabela.get_children():
+        tabela.delete(item)
 
-def mostrar_relatorio(tipo):
-    global relatorio_atual
+    for id_m, dados in estoque_teste.items():
+        med = dados["medicamento"]
+        status = med.status()
 
-    if tipo == "geral":
-        relatorio_atual = relatorio_geral_texto(estoque_teste)
-    elif tipo == "vencidos":
-        relatorio_atual = relatorio_vencidos_texto(estoque_teste)
-    else:
-        relatorio_atual = relatorio_pdv_texto(estoque_teste)
+        if tipo_relatorio.get() != "geral" and status != tipo_relatorio.get():
+            continue
 
-    texto.delete("1.0", tk.END)
-    texto.insert(tk.END, relatorio_atual)
+        tabela.insert(
+            "",
+            "end",
+            values=(
+                id_m,
+                med._nome,
+                med._lote,
+                med._validade.strftime("%m/%Y"),
+                dados["quantidade"],
+                status
+            )
+        )
 
-def baixar():
-    if not relatorio_atual:
+def exportar_csv():
+    caminho = filedialog.asksaveasfilename(
+        defaultextension=".csv",
+        filetypes=[("CSV", "*.csv")]
+    )
+
+    if not caminho:
         return
 
-    caminho = filedialog.asksaveasfilename(
-        defaultextension=".txt",
-        filetypes=[("Texto", "*.txt")]
-    )
-    if caminho:
-        with open(caminho, "w", encoding="utf-8") as f:
-            f.write(relatorio_atual)
+    filtro = None if tipo_relatorio.get() == "geral" else tipo_relatorio.get()
+    gerar_csv(estoque_teste, caminho, filtro)
+
+    messagebox.showinfo("Sucesso", "Relatório exportado em CSV.")
 
 def limpar_campos():
-    entry_nome.delete(0, tk.END)
-    entry_validade.delete(0, tk.END)
-    entry_lote.delete(0, tk.END)
-    entry_quantidade.delete(0, tk.END)
-    entry_id.delete(0, tk.END)
+    for e in (entry_nome, entry_validade, entry_lote, entry_quantidade, entry_id):
+        e.delete(0, tk.END)
+    entry_qtd_controle.delete(0, tk.END)
 
+# CADASTRO 
 
-janela = tk.Tk()
-janela.title("Controle de Estoque - Medicamentos")
-janela.geometry("950x550")
+frame_cadastro = ttk.LabelFrame(janela, text="Cadastro de Medicamento")
+frame_cadastro.pack(fill="x", padx=10, pady=5)
 
-frame_form = tk.LabelFrame(janela, text="Cadastro / Controle")
-frame_form.pack(fill="x", padx=10, pady=5)
+ttk.Label(frame_cadastro, text="Nome").grid(row=0, column=0)
+ttk.Label(frame_cadastro, text="Validade (MM/AAAA)").grid(row=0, column=1)
+ttk.Label(frame_cadastro, text="Lote").grid(row=0, column=2)
+ttk.Label(frame_cadastro, text="Quantidade").grid(row=0, column=3)
 
-labels = ["Nome", "Validade (MM/AAAA)", "Lote", "Quantidade", "ID (Remover/Diminuir)"]
-entries = []
+entry_nome = ttk.Entry(frame_cadastro, width=30)
+entry_validade = ttk.Entry(frame_cadastro, width=15)
+entry_lote = ttk.Entry(frame_cadastro, width=10)
+entry_quantidade = ttk.Entry(frame_cadastro, width=10)
 
-for i, label in enumerate(labels):
-    tk.Label(frame_form, text=label).grid(row=0, column=i)
-    e = tk.Entry(frame_form, width=18)
-    e.grid(row=1, column=i, padx=5)
-    entries.append(e)
+entry_nome.grid(row=1, column=0, padx=5)
+entry_validade.grid(row=1, column=1, padx=5)
+entry_lote.grid(row=1, column=2, padx=5)
+entry_quantidade.grid(row=1, column=3, padx=5)
 
-entry_nome, entry_validade, entry_lote, entry_quantidade, entry_id = entries
+ttk.Button(frame_cadastro, text="Cadastrar", command=cadastrar).grid(row=1, column=4, padx=10)
 
-tk.Button(frame_form, text="Cadastrar", command=cadastrar).grid(row=2, column=0, pady=5)
-tk.Button(frame_form, text="Diminuir", command=diminuir).grid(row=2, column=1)
-tk.Button(frame_form, text="Remover", command=remover).grid(row=2, column=2)
+# CONTROLE 
 
+frame_controle = ttk.LabelFrame(janela, text="Controle de Estoque")
+frame_controle.pack(fill="x", padx=10, pady=5)
 
-frame_rel = tk.Frame(janela)
-frame_rel.pack(pady=5)
+ttk.Label(frame_controle, text="ID").grid(row=0, column=0)
+ttk.Label(frame_controle, text="Quantidade").grid(row=0, column=1)
 
-tk.Button(frame_rel, text="Relatório Geral", width=20, command=lambda: mostrar_relatorio("geral")).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_rel, text="Vencidos", width=20, command=lambda: mostrar_relatorio("vencidos")).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_rel, text="PDV", width=20, command=lambda: mostrar_relatorio("pdv")).pack(side=tk.LEFT, padx=5)
-tk.Button(frame_rel, text="Baixar", width=20, command=baixar).pack(side=tk.LEFT, padx=5)
+entry_id = ttk.Entry(frame_controle, width=10)
+entry_qtd_controle = ttk.Entry(frame_controle, width=10)
 
+entry_id.grid(row=1, column=0, padx=5)
+entry_qtd_controle.grid(row=1, column=1, padx=5)
 
-texto = tk.Text(janela, font=("Courier", 10))
-texto.pack(expand=True, fill="both", padx=10, pady=10)
+ttk.Button(frame_controle, text="Diminuir", command=diminuir).grid(row=1, column=2, padx=5)
+ttk.Button(frame_controle, text="Remover", command=remover).grid(row=1, column=3, padx=5)
 
+# FILTROS 
+
+frame_filtro = ttk.LabelFrame(janela, text="Filtro de Relatório")
+frame_filtro.pack(fill="x", padx=10, pady=5)
+
+ttk.Radiobutton(frame_filtro, text="Geral", variable=tipo_relatorio, value="geral", command=atualizar_tabela).pack(side=tk.LEFT, padx=10)
+ttk.Radiobutton(frame_filtro, text="Vencidos", variable=tipo_relatorio, value="vencido", command=atualizar_tabela).pack(side=tk.LEFT, padx=10)
+ttk.Radiobutton(frame_filtro, text="PDV", variable=tipo_relatorio, value="PDV", command=atualizar_tabela).pack(side=tk.LEFT, padx=10)
+
+ttk.Button(frame_filtro, text="Exportar CSV", command=exportar_csv).pack(side=tk.RIGHT, padx=10)
+
+# TABELA 
+
+colunas = ("ID", "Nome", "Lote", "Validade", "Quantidade", "Status")
+
+tabela = ttk.Treeview(janela, columns=colunas, show="headings")
+tabela.pack(expand=True, fill="both", padx=10, pady=10)
+
+for col in colunas:
+    tabela.heading(col, text=col)
+    tabela.column(col, anchor="center")
+
+tabela.column("Nome", width=300, anchor="w")
+
+scroll = ttk.Scrollbar(janela, orient="vertical", command=tabela.yview)
+tabela.configure(yscrollcommand=scroll.set)
+scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+atualizar_tabela()
 janela.mainloop()

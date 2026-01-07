@@ -1,6 +1,3 @@
-
-from random import randint,random
-
 estoque_teste = {}
 
 def adicionar_medicamento(medicamento, quantidade):
@@ -18,18 +15,18 @@ def adicionar_medicamento(medicamento, quantidade):
 
             }
 
-def diminuir_medicamento(medicamento, quantidade):
+def diminuir_medicamento(medicamento_id, quantidade):
 
-    if medicamento._id in estoque_teste:
-        if estoque_teste[medicamento._id]['quantidade'] >= quantidade:
-            estoque_teste[medicamento._id]['quantidade'] -= quantidade
+    if medicamento_id in estoque_teste:
+        if estoque_teste[medicamento_id]['quantidade'] >= quantidade:
+            estoque_teste[medicamento_id]['quantidade'] -= quantidade
         else:
-            return f"[ERRO] Quantidade em estoque {estoque_teste[medicamento._id]['quantidade']}, quantidade a ser removida {quantidade}"
+            return f"[ERRO] Quantidade em estoque {estoque_teste[medicamento_id]['quantidade']}, quantidade a ser removida {quantidade}"
 
-def remover_medicamento(medicamento):
+def remover_medicamento(id):
 
-    if medicamento._id in estoque_teste:
-        del estoque_teste[medicamento._id]
+    if id in estoque_teste:
+        del estoque_teste[id]
     else:
         return "[ERRO] Medicamento não encontrado no estoque."
     
